@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s  # Set how often Prometheus scrapes the targets
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']  # Prometheus scraping itself for health check
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['backend:8000']  # Backend service scraping
+  # - job_name: 'frontend'
+  #   static_configs:
+  #     - targets: ['frontend:3000']  # Frontend service scraping
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['localhost:80']
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+  - job_name: 'loki'
+    static_configs:
+     - targets: ['loki:3100']
+
+  - job_name: 'grafana'
+    static_configs:
+     - targets: ['grafana:3001']
+

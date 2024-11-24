@@ -1,0 +1,75 @@
+
+# auth_enabled: false
+
+# server:
+#   http_listen_port: 3100
+#   # Removed the unsupported ingestion_rate_mb field
+#   # To control ingestion rates, use limits_config below if necessary
+
+# common:
+#   instance_addr: 127.0.0.1
+#   path_prefix: /loki
+#   storage:
+#     filesystem:
+#       chunks_directory: /loki/chunks
+#       rules_directory: /loki/rules
+#   replication_factor: 3  # Increased replication factor for fault tolerance
+#   ring:
+#     kvstore:
+#       store: inmemory  # Consider switching to Consul or Etcd for larger setups
+
+# schema_config:
+#   configs:
+#     - from: 2020-10-24
+#       store: tsdb
+#       object_store: filesystem  # Optional: You can change to 's3' or other object stores
+#       schema: v13
+#       index:
+#         prefix: index_
+#         period: 24h
+
+# # Optionally add rate-limiting configuration under limits_config
+# limits_config:
+#   ingestion_rate_mb: 10  # Set the ingestion rate to 10 MB/s
+#   ingestion_rate_strategy: "reject_old_samples"  # Optionally reject old samples if limit is exceeded
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  path_prefix: /tmp/loki
+  storage:
+    filesystem:
+      chunks_directory: /tmp/loki/chunks
+      rules_directory: /tmp/loki/rules
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+query_scheduler:
+  max_outstanding_requests_per_tenant: 10000  
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  max_query_series: 5000
+  allow_structured_metadata: false

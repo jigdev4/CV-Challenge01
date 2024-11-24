@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - shared-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SERVER_ROOT_URL=http://grafana:3000/grafana   # Updated root URL
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - shared-network
+    # depends_on:
+    #   prometheus:
+    #     condition: service_healthy
+
+  loki:
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - shared-network
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+
+  promtail:
+    image: grafana/promtail
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yaml:/etc/promtail/config.yaml
+    networks:
+      - shared-network
+    ports:
+      - "9080:9080"
+
+  cadvisor:
+    image: google/cadvisor:latest
+    ports:
+      - "8082:8080"
+    networks:
+      - shared-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys:/sys
+      - /var/lib/docker/:/var/lib/docker/
+
+networks:
+  shared-network:
+    external: true
+
+volumes:
+  loki-data:
